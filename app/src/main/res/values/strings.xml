@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Time for Music</string>
+    <string name="the_music_party_game">The music party game</string>
+    <string name="connect_to_spotify">Connect to Spotify</string>
+    <string name="drag_to_scan_the_next_song">Drag to scan the next song</string>
+    <string name="start_game">"Start game"</string>
+</resources>
