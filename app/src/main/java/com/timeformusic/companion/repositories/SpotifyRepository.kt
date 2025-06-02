@@ -24,7 +24,6 @@ class SpotifyRepository @Inject constructor(
     private val clientId = "a181c05e883243428e2fce221df7f9a2"
 
     init {
-        SpotifyAppRemote.setDebugMode(true)
         (context as Application).registerActivityLifecycleCallbacks(object :
             Application.ActivityLifecycleCallbacks {
             override fun onActivityDestroyed(activity: Activity) {
@@ -108,5 +107,10 @@ class SpotifyRepository @Inject constructor(
         spotifyAppRemote?.let {
             SpotifyAppRemote.disconnect(it)
         }
+    }
+
+    fun isSpotifyInstalled(): Boolean {
+        val launchIntent = context.packageManager.getLaunchIntentForPackage("com.spotify.music")
+        return launchIntent != null
     }
 }

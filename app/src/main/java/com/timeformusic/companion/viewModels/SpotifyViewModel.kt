@@ -26,8 +26,8 @@ class SpotifyViewModel @Inject constructor(
     private val _isConnected: MutableStateFlow<Boolean> = MutableStateFlow(spotifyRepository.checkIfConnected())
     val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
-    private val _authToken = MutableStateFlow<String?>("")
-    val authToken: StateFlow<String?> = _authToken
+    private val _isSpotifyMissingModalOpen = MutableStateFlow<Boolean>(false)
+    val isSpotifyMissingModalOpen: StateFlow<Boolean> = _isSpotifyMissingModalOpen
 
     fun connectToSpotify(onConnected: () -> Unit, onError: (Throwable) -> Unit) {
         spotifyRepository.connectToSpotifyAppRemote(
@@ -41,16 +41,12 @@ class SpotifyViewModel @Inject constructor(
     }
 
     fun authenticate(activity: Activity) {
-        spotifyRepository.authenticate(activity) { token ->
-            _isConnected.value = true;
-            _authToken.update { token }
-        }
-    }
-
-    fun handleAuthResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        spotifyRepository.handleAuthResult(requestCode, resultCode, data) { token ->
-            _authToken.update { token }
-
+        if (spotifyRepository.isSpotifyInstalled()){
+            spotifyRepository.authenticate(activity) { token ->
+                _isConnected.value = true;
+            }
+        } else {
+            _isSpotifyMissingModalOpen.update { true }
         }
     }
 
@@ -95,5 +91,11 @@ class SpotifyViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         spotifyRepository.disconnect()
+    }
+
+    fun setIsSpotifyMissingModalOpen(isSpotifyMissingModalOpen: Boolean) {
+        _isSpotifyMissingModalOpen.update {
+            isSpotifyMissingModalOpen
+        }
     }
 }

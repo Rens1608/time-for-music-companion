@@ -3,6 +3,7 @@ package com.timeformusic.companion.pages
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.timeformusic.companion.LoadingScreen
 import com.timeformusic.companion.R
+import com.timeformusic.companion.composables.Modal
 import com.timeformusic.companion.navigation.Routes
 import com.timeformusic.companion.viewModels.SpotifyViewModel
 
@@ -35,6 +37,7 @@ import com.timeformusic.companion.viewModels.SpotifyViewModel
 fun HomePage(spotifyViewModel: SpotifyViewModel, onNavigateToNext: (String) -> Unit) {
     val isLoading by spotifyViewModel.isLoading.collectAsState()
     val isConnected by spotifyViewModel.isConnected.collectAsState()
+    val isSpotifyMissingModalOpen by spotifyViewModel.isSpotifyMissingModalOpen.collectAsState()
     val activity = LocalContext.current as ComponentActivity
 
     LaunchedEffect(Unit) {
@@ -44,65 +47,74 @@ fun HomePage(spotifyViewModel: SpotifyViewModel, onNavigateToNext: (String) -> U
     if (isLoading) {
         LoadingScreen()
     } else {
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(
-                    top = 80.dp,
-                    bottom = 100.dp
-                ),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.logo),
-                    contentDescription = null,
-                    contentScale = ContentScale.FillHeight,
-                    modifier = Modifier.height(180.dp)
-                )
-                Text(
-                    stringResource(R.string.the_music_party_game),
-                    style = TextStyle(
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
-                    )
-                )
+        Box {
+            if (isSpotifyMissingModalOpen) {
+                Modal(
+                    "Missing Spotify app",
+                    "It looks like Spotify is not installed on your device, please download the app before you can continue."
+                ) {
+                    spotifyViewModel.setIsSpotifyMissingModalOpen(false)
+                }
             }
-            Button(
-                modifier = Modifier
-                    .height(55.dp)
-                    .wrapContentWidth(),
-                onClick = {
-                    if (isConnected) {
-                        onNavigateToNext(Routes.QR_PAGE)
-                    }
-                    else {
-                        spotifyViewModel.setIsLoading(true)
-                        spotifyViewModel.authenticate(activity)
-                        spotifyViewModel.connectToSpotify({
-                            println("UI")
-                            spotifyViewModel.setIsLoading(false)
-                            onNavigateToNext(Routes.QR_PAGE)
-                        }, {
-                            spotifyViewModel.setIsLoading(false)
-                        })
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = 80.dp,
+                        bottom = 100.dp
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    stringResource( if(isConnected) R.string.start_game else R.string.connect_to_spotify),
-                    style = TextStyle(
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp,
-                        color = Color.Black
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.logo),
+                        contentDescription = null,
+                        contentScale = ContentScale.FillHeight,
+                        modifier = Modifier.height(180.dp)
                     )
-                )
+                    //                Text(
+                    //                    stringResource(R.string.the_music_party_game),
+                    //                    style = TextStyle(
+                    //                        color = Color.White,
+                    //                        fontWeight = FontWeight.Bold,
+                    //                        fontSize = 24.sp
+                    //                    )
+                    //                )
+                }
+                Button(
+                    modifier = Modifier
+                        .height(55.dp)
+                        .wrapContentWidth(),
+                    onClick = {
+                        if (isConnected) {
+                            onNavigateToNext(Routes.QR_PAGE)
+                        } else {
+                            spotifyViewModel.setIsLoading(true)
+                            spotifyViewModel.authenticate(activity)
+                            spotifyViewModel.connectToSpotify({
+                                println("UI")
+                                spotifyViewModel.setIsLoading(false)
+                                onNavigateToNext(Routes.QR_PAGE)
+                            }, {
+                                spotifyViewModel.setIsLoading(false)
+                            })
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                ) {
+                    Text(
+                        stringResource(if (isConnected) R.string.start_game else R.string.connect_to_spotify),
+                        style = TextStyle(
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp,
+                            color = Color.Black
+                        )
+                    )
+                }
             }
         }
     }
